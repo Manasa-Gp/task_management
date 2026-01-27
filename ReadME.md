@@ -38,9 +38,9 @@ git clone <repository-url>
 cd task-management-api
 ```
 
-### 2. Create Virtual Environment
+### 2. Navigate to Virtual Environment
 ```bash
-python -m venv task
+cd <Project-Folder>\task
 ```
 
 ### 3. Activate Virtual Environment
@@ -57,7 +57,7 @@ source task/bin/activate
 
 ### 4. Install Dependencies
 ```bash
-pip install fastapi uvicorn pydantic
+pip install -r requirements.txt
 ```
 
 ### 5. Initialize Database
