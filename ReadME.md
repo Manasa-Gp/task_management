@@ -2,6 +2,32 @@
 
 A RESTful API for managing tasks with full CRUD operations, filtering, sorting, and validation. Built with FastAPI and SQLite.
 
+---
+
+## Quick Start
+```bash
+# 1. Activate virtual environment
+task\Scripts\activate          # Windows
+source task/bin/activate       # Mac/Linux
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Initialize database
+python -c "import database.database as db; db.init_database()"
+
+# 4. Populate sample data (optional)
+python setup_data.py inject
+python setup_data.py direct  # Add directly to database (faster)
+# 5. Start server
+uvicorn main:app --reload
+
+# 6. Visit API documentation
+# http://localhost:8000/docs
+```
+
+---
+
 ## Features
 
 -  Create, read, update, and delete tasks
@@ -17,7 +43,7 @@ A RESTful API for managing tasks with full CRUD operations, filtering, sorting, 
 
 ## Technology Stack
 
-- **Language:** Python 3.x
+- **Language:** Python 3.8+
 - **Framework:** FastAPI
 - **Database:** SQLite3
 - **Validation:** Pydantic
@@ -25,58 +51,88 @@ A RESTful API for managing tasks with full CRUD operations, filtering, sorting, 
 
 ---
 
-## Installation & Setup
+## Installation
 
 ### Prerequisites
 
 - Python 3.8 or higher
 - pip (Python package manager)
 
-### 1. Clone the Repository
+### Setup Steps
+
+**1. Clone Repository**
 ```bash
 git clone <repository-url>
 cd task-management-api
 ```
 
-### 2. Navigate to Virtual Environment
-```bash
-cd <Project-Folder>\task
-```
+**2. Activate Virtual Environment**
 
-### 3. Activate Virtual Environment
-
-**Windows:**
+Windows:
 ```bash
 task\Scripts\activate
 ```
 
-**Mac/Linux:**
+Mac/Linux:
 ```bash
 source task/bin/activate
 ```
 
-### 4. Install Dependencies
+**3. Install Dependencies**
 ```bash
 pip install -r requirements.txt
 ```
 
-### 5. Initialize Database
+**4. Initialize Database**
 ```bash
 python -c "import database.database as db; db.init_database()"
 ```
 
-### 6. Run the Server
+**5. Start Server**
 ```bash
 uvicorn main:app --reload
 ```
 
-Server will start at: **http://localhost:8000**
+**6. Access API**
+- Server: http://localhost:8000
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
 
-### 7. View API Documentation
+---
 
-Open your browser and navigate to:
-- Swagger UI: **http://localhost:8000/docs**
-- ReDoc: **http://localhost:8000/redoc**
+## Data Population
+
+Populate the database with 25 sample tasks for testing.
+
+### Quick Setup
+```bash
+# Start server first
+uvicorn main:app --reload
+
+# In another terminal, populate data
+python setup_data.py inject
+```
+
+### Available Commands
+```bash
+python setup_data.py clear   # Clear all tasks
+python setup_data.py inject  # Add 25 sample tasks
+python setup_data.py direct  # Add directly to database (faster)
+python setup_data.py verify  # Show statistics
+python setup_data.py reset   # Complete reset
+```
+
+### Interactive Menu
+```bash
+python setup_data.py
+```
+
+### Sample Data Overview
+
+- **25 tasks** across 6 categories (personal, work, learning, health, home, urgent)
+- **Status:** 40% pending, 30% in_progress, 30% completed
+- **Priority:** 35% high, 40% medium, 25% low
+- **Due dates:** 5 days overdue to 60 days future
 
 ---
 
@@ -89,10 +145,9 @@ http://localhost:8000
 
 ### Health Check
 
-#### `GET /`
-Check API status
+**GET /**
 
-**Response:**
+Check API status
 ```json
 {
   "message": "Task Management API",
@@ -105,10 +160,11 @@ Check API status
 
 ### Tasks
 
-#### `POST /api/tasks`
-Create a new task
+#### Create Task
 
-**Request Body:**
+**POST /api/tasks**
+
+**Request:**
 ```json
 {
   "title": "Buy groceries",
@@ -137,67 +193,44 @@ Create a new task
 
 ---
 
-#### `GET /api/tasks`
-Get all tasks with optional filters and sorting
+#### Get All Tasks
+
+**GET /api/tasks**
 
 **Query Parameters:**
 - `status` - Filter by status (pending | in_progress | completed)
 - `priority` - Filter by priority (low | medium | high)
-- `category` - Filter by category (string)
+- `category` - Filter by category
 - `sort_by` - Sort by field (due_date | created_at | updated_at)
 - `order` - Sort order (asc | desc)
 
 **Examples:**
 ```bash
-# Get all tasks
 GET /api/tasks
-
-# Get pending tasks
 GET /api/tasks?status=pending
-
-# Get high priority tasks sorted by due date
 GET /api/tasks?priority=high&sort_by=due_date&order=asc
-
-# Get completed personal tasks
 GET /api/tasks?status=completed&category=personal
 ```
 
 **Response:** `200 OK`
-```json
-[
-  {
-    "id": 1,
-    "title": "Buy groceries",
-    "status": "pending",
-    ...
-  },
-  {
-    "id": 2,
-    "title": "Finish report",
-    "status": "in_progress",
-    ...
-  }
-]
-```
 
 ---
 
-#### `GET /api/tasks/{id}`
-Get a specific task by ID
+#### Get Task by ID
 
-**Example:**
-```bash
-GET /api/tasks/1
-```
+**GET /api/tasks/{id}**
 
 **Response:** `200 OK` or `404 Not Found`
 
 ---
 
-#### `PATCH /api/tasks/{id}`
-Partially update a task (only provided fields are updated)
+#### Update Task (Partial)
 
-**Request Body:**
+**PATCH /api/tasks/{id}**
+
+Update only provided fields.
+
+**Request:**
 ```json
 {
   "status": "completed"
@@ -208,10 +241,13 @@ Partially update a task (only provided fields are updated)
 
 ---
 
-#### `PUT /api/tasks/{id}`
-Fully replace a task (all fields must be provided)
+#### Replace Task (Full)
 
-**Request Body:**
+**PUT /api/tasks/{id}**
+
+All fields must be provided.
+
+**Request:**
 ```json
 {
   "title": "Updated Title",
@@ -227,13 +263,9 @@ Fully replace a task (all fields must be provided)
 
 ---
 
-#### `DELETE /api/tasks/{id}`
-Delete a task
+#### Delete Task
 
-**Example:**
-```bash
-DELETE /api/tasks/1
-```
+**DELETE /api/tasks/{id}**
 
 **Response:** `204 No Content` or `404 Not Found`
 
@@ -245,19 +277,19 @@ DELETE /api/tasks/1
 
 | Field | Type | Constraints | Description |
 |-------|------|-------------|-------------|
-| id | INTEGER | PRIMARY KEY, AUTOINCREMENT | Unique task identifier |
+| id | INTEGER | PRIMARY KEY, AUTOINCREMENT | Unique identifier |
 | title | TEXT | NOT NULL, MAX 200 chars | Task title |
-| description | TEXT | - | Detailed description (optional) |
+| description | TEXT | - | Detailed description |
 | status | TEXT | CHECK: pending, in_progress, completed | Task status |
 | priority | TEXT | CHECK: low, medium, high | Task priority |
 | category | TEXT | - | Task category |
-| due_date | TEXT | - | Due date (YYYY-MM-DD format) |
+| due_date | TEXT | - | Due date (YYYY-MM-DD) |
 | created_at | TEXT | DEFAULT CURRENT_TIMESTAMP | Creation timestamp |
 | updated_at | TEXT | AUTO-UPDATED | Last update timestamp |
 
-### Database Triggers
+### Triggers
 
-- **updated_task**: Automatically updates `updated_at` timestamp on any UPDATE operation
+- **updated_task** - Automatically updates `updated_at` on any UPDATE
 
 ---
 
@@ -265,16 +297,13 @@ DELETE /api/tasks/1
 
 ### Required Fields
 - `title` (max 200 characters)
-- `status` (must be: pending, in_progress, or completed)
-- `priority` (must be: low, medium, or high)
+- `status` (pending | in_progress | completed)
+- `priority` (low | medium | high)
 - `category`
 - `due_date` (format: YYYY-MM-DD)
 
 ### Optional Fields
 - `description`
-
-### Date Format
-- Due date must match: `YYYY-MM-DD` (e.g., 2026-01-30)
 
 ---
 
@@ -285,39 +314,20 @@ DELETE /api/tasks/1
 | 200 | OK | Successful GET, PUT, PATCH |
 | 201 | Created | Successful POST |
 | 204 | No Content | Successful DELETE |
-| 400 | Bad Request | Invalid request data |
 | 404 | Not Found | Resource not found |
 | 422 | Unprocessable Entity | Validation error |
 | 500 | Internal Server Error | Server error |
 
 ---
 
-## Project Structure
-```
-task-management-api/
-├── main.py                 # API endpoints and routes
-├── database/
-│   └── database.py        # Database operations and queries
-├── validation_models.py   # Pydantic validation models
-├── test.py               # Test suite
-├── tasks_db.db           # SQLite database (generated)
-├── task/                 # Virtual environment
-└── README.md
-```
-
----
-
-
 ## Testing
 
 ### Run Tests
 ```bash
-# Make sure server is running first
+# Start server
 uvicorn main:app --reload
-```
 
-### Run with pytest 
-```bash
+# Run tests with pytest
 pip install pytest
 pytest test.py -v
 ```
@@ -326,8 +336,7 @@ pytest test.py -v
 
 ## Example Usage
 
-
-### Using Python Requests
+### Python Requests
 ```python
 import requests
 
@@ -357,42 +366,45 @@ print(response.json())
 
 ---
 
+## Project Structure
+```
+task-management-api/
+├── main.py                 # API endpoints
+├── database/
+│   └── database.py        # Database operations
+├── validation_models.py   # Pydantic models
+├── test.py               # Test suite
+├── setup_data.py     # Data population script
+├── tasks_db.db           # SQLite database
+├── task/                 # Virtual environment
+└── README.md
+```
+
+---
+
 ## Design Decisions
 
 ### PATCH vs PUT
-- **PATCH** (`/api/tasks/{id}`): Partial updates - only update fields provided
-- **PUT** (`/api/tasks/{id}`): Full replacement - all fields must be provided
-
-This provides flexibility: use PATCH for quick status updates, use PUT for complete task replacement.
+- **PATCH** - Partial updates (only provided fields)
+- **PUT** - Full replacement (all fields required)
 
 ### Automatic Timestamps
-Database trigger automatically updates `updated_at` on any modification, ensuring accurate tracking without manual intervention.
+Database trigger updates `updated_at` automatically on modifications.
 
-### Validation Strategy
-Pydantic models provide:
-- Automatic validation before database operations
-- Type safety
-- Clear error messages (422 responses)
-- Auto-generated API documentation
-
-### Query Parameters
-All filters are optional and can be combined for powerful querying:
-```
-/api/tasks?status=pending&priority=high&sort_by=due_date&order=asc
-```
+### Validation
+Pydantic provides automatic validation, type safety, and clear error messages.
 
 ---
 
 ## Error Handling
 
-### Validation Errors (422)
+### Validation Error (422)
 ```json
 {
   "detail": [
     {
       "loc": ["body", "status"],
-      "msg": "value is not a valid enumeration member",
-      "type": "type_error.enum"
+      "msg": "value is not a valid enumeration member"
     }
   ]
 }
@@ -405,62 +417,42 @@ All filters are optional and can be combined for powerful querying:
 }
 ```
 
-### Server Error (500)
-```json
-{
-  "detail": "Failed to create task"
-}
-```
-
----
-
-## Requirements
-
-Create `requirements.txt`:
-```txt
-fastapi==0.109.0
-uvicorn[standard]==0.27.0
-pydantic==2.5.0
-```
-
-Install with:
-```bash
-pip install -r requirements.txt
-```
-
----
-
-## Future Enhancements
-
--  Pagination for large result sets
--  Search functionality (by title/description)
--  Statistics endpoint (total, completed, pending counts)
--  User authentication and authorization
--  Task tags/labels
--  Due date reminders
--  Task history/audit log
--  Export to CSV/JSON
-
 ---
 
 ## Troubleshooting
 
 ### Port Already in Use
 ```bash
-# Change port
 uvicorn main:app --reload --port 8001
-```
-
-### Database Locked Error
-```bash
-# Close all database connections and restart server
 ```
 
 ### Module Not Found
 ```bash
-# Make sure virtual environment is activated
-source task/bin/activate  # Mac/Linux
-task\Scripts\activate     # Windows
+# Activate virtual environment
+task\Scripts\activate          # Windows
+source task/bin/activate       # Mac/Linux
+```
+
+### Database Locked
+Close all database connections and restart server.
+
+### IDs Not Starting at 1
+```bash
+python setup_data.py clear  # Resets counters
+```
+
+---
+
+## Requirements
+```txt
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+pydantic==2.5.0
+```
+
+Install:
+```bash
+pip install -r requirements.txt
 ```
 
 ---
@@ -469,22 +461,10 @@ task\Scripts\activate     # Windows
 
 MIT License
 
----
 
-## Author
-
-[Your Name]
-
----
-
-## Contact
-
-For questions or issues, please contact [your-email@example.com]
-
----
 
 ## Acknowledgments
 
-- Built with [FastAPI](https://fastapi.tiangolo.com/)
-- Validation with [Pydantic](https://docs.pydantic.dev/)
-- Database: [SQLite](https://www.sqlite.org/)
+- [FastAPI](https://fastapi.tiangolo.com/)
+- [Pydantic](https://docs.pydantic.dev/)
+- [SQLite](https://www.sqlite.org/)
