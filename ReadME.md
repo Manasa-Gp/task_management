@@ -456,6 +456,12 @@ pip install -r requirements.txt
 ```
 
 ---
+## Future Enhancements
+- 	Implement pagination for the GET /api/tasks endpoint
+- Implement search functionality by task title or description
+- Add an endpoint to get statistics (total tasks, completed tasks, pending tasks)
+
+
 
 ## License
 
